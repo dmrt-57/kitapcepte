@@ -27,12 +27,13 @@ import com.kitapcepte.core.designsystem.component.MemberRequiredBottomSheet
 import com.kitapcepte.core.designsystem.theme.BackgroundGradient
 import com.kitapcepte.core.designsystem.theme.KitapCepteTheme
 import com.kitapcepte.domain.model.Session
+import com.kitapcepte.feature.onboarding.OnboardingRoute
 
 @Composable
 fun KitapCepteNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-    startDestination: Screen = Screen.Home,
+    startDestination: Screen = Screen.Onboarding,
     session: Session = Session.LoggedIn(com.kitapcepte.domain.model.User(1, "demo@kitapcepte.com", "Serdar")),
     cartItemCount: Int = 0
 ) {
@@ -42,8 +43,8 @@ fun KitapCepteNavHost(
     val currentRoute = navBackStackEntry?.destination?.route
 
     val showBottomBar = currentRoute?.let { route ->
-        route.contains("Home") || route.contains("Favorites") || route.contains("Cart") || route.contains("Profile")
-    } ?: true
+        !route.contains("Onboarding") && !route.contains("Auth") && !route.contains("Detail") && !route.contains("Payment")
+    } ?: false
 
     val currentBottomDestination = when {
         currentRoute?.contains("Favorites") == true -> BottomBarDestination.FAVORITES
@@ -132,9 +133,13 @@ fun KitapCepteNavHost(
                 modifier = Modifier.padding(innerPadding)
             ) {
                 composable<Screen.Onboarding> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Onboarding Ekranı (Faz 1)", style = MaterialTheme.typography.titleLarge)
-                    }
+                    OnboardingRoute(
+                        onNavigateToAuth = {
+                            navController.navigate(Screen.Auth) {
+                                popUpTo(Screen.Onboarding) { inclusive = true }
+                            }
+                        }
+                    )
                 }
                 composable<Screen.Auth> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
