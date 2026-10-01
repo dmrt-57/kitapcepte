@@ -27,6 +27,7 @@ import com.kitapcepte.core.designsystem.component.MemberRequiredBottomSheet
 import com.kitapcepte.core.designsystem.theme.BackgroundGradient
 import com.kitapcepte.core.designsystem.theme.KitapCepteTheme
 import com.kitapcepte.domain.model.Session
+import com.kitapcepte.feature.auth.AuthRoute
 import com.kitapcepte.feature.onboarding.OnboardingRoute
 
 @Composable
@@ -34,7 +35,7 @@ fun KitapCepteNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
     startDestination: Screen = Screen.Onboarding,
-    session: Session = Session.LoggedIn(com.kitapcepte.domain.model.User(1, "demo@kitapcepte.com", "Serdar")),
+    session: Session = Session.LoggedOut,
     cartItemCount: Int = 0
 ) {
     var showMemberRequiredSheet by remember { mutableStateOf(false) }
@@ -142,9 +143,13 @@ fun KitapCepteNavHost(
                     )
                 }
                 composable<Screen.Auth> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Giriş / Kayıt Ekranı (Faz 2)", style = MaterialTheme.typography.titleLarge)
-                    }
+                    AuthRoute(
+                        onNavigateToHome = {
+                            navController.navigate(Screen.Home) {
+                                popUpTo(Screen.Auth) { inclusive = true }
+                            }
+                        }
+                    )
                 }
                 composable<Screen.Home> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

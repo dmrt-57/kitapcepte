@@ -56,4 +56,24 @@
     <string name="empty_cart">Sepetinizde henüz ürün bulunmuyor.</string>
     <string name="error_generic">Bir sorun oluştu. Lütfen tekrar deneyin.</string>
     <string name="network_error">İnternet bağlantınızı kontrol edin.</string>
+
+    <!-- Auth Screen -->
+    <string name="auth_welcome_back">Tekrar hoş geldiniz</string>
+    <string name="auth_create_account">Yeni bir hesap oluşturun</string>
+    <string name="auth_tab_login">Giriş Yap</string>
+    <string name="auth_tab_register">Kayıt Ol</string>
+    <string name="auth_label_name">Ad Soyad</string>
+    <string name="auth_label_email">E-posta Adresi</string>
+    <string name="auth_label_password">Şifre</string>
+    <string name="auth_label_password_confirm">Şifre Tekrar</string>
+    <string name="auth_divider_or">veya</string>
+    <string name="auth_switch_to_register">Hesabınız yok mu? Kayıt Olun</string>
+    <string name="auth_switch_to_login">Zaten hesabınız var mı? Giriş Yapın</string>
+    <string name="auth_error_invalid_email">Lütfen geçerli bir e-posta adresi girin.</string>
+    <string name="auth_error_short_password">Şifre en az 6 karakter olmalıdır.</string>
+    <string name="auth_error_password_mismatch">Şifreler eşleşmiyor.</string>
+    <string name="auth_error_name_empty">Lütfen adınızı girin.</string>
+    <string name="auth_error_account_not_found">Hesabınız bulunamadı, lütfen kayıt olun.</string>
+    <string name="auth_error_generic_login">Giriş başarısız oldu.</string>
+    <string name="auth_error_generic_register">Kayıt başarısız oldu.</string>
 </resources>
