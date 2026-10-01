@@ -58,6 +58,7 @@
     <string name="network_error">İnternet bağlantınızı kontrol edin.</string>
     <string name="book_added_to_cart">%1$s sepete eklendi.</string>
     <string name="book_removed_from_cart">%1$s sepetten çıkarıldı.</string>
+    <string name="book_removed_from_favorites">%1$s favorilerden çıkarıldı.</string>
     <string name="btn_remove_from_cart">Sepetten Çıkar</string>
     <string name="detail_title">Kitap Detayı</string>
     <string name="similar_books_title">Benzer Kitaplar</string>

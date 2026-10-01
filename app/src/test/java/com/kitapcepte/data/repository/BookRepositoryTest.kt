@@ -1,10 +1,13 @@
 package com.kitapcepte.data.repository
 
+import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.kitapcepte.data.local.dao.CartDao
 import com.kitapcepte.data.local.dao.FavoriteDao
 import com.kitapcepte.data.local.entity.CartItemEntity
+import com.kitapcepte.data.local.entity.FavoriteBookEntity
 import com.kitapcepte.data.mapper.BookMapper
+import kotlinx.coroutines.flow.flowOf
 import com.kitapcepte.data.remote.OpenLibraryApi
 import com.kitapcepte.data.remote.dto.BookDocDto
 import com.kitapcepte.data.remote.dto.SearchResponseDto
@@ -142,6 +145,32 @@ class BookRepositoryTest {
         assertThat(isAdded).isFalse()
         coVerify(exactly = 1) { favoriteDao.deleteFavorite("OL123W") }
         coVerify(exactly = 0) { favoriteDao.insertFavorite(any()) }
+    }
+
+    @Test
+    fun `getFavoriteBooks maps entities to domain books`() = runTest {
+        val entity = FavoriteBookEntity(
+            bookId = "OL123W",
+            title = "Test Book",
+            author = "Author",
+            coverUrl = "https://cover.jpg",
+            price = 99.90,
+            originalPrice = 129.90,
+            categorySlug = "fantasy",
+            isTopItem = true
+        )
+        every { favoriteDao.getAllFavorites() } returns flowOf(listOf(entity))
+
+        repository.getFavoriteBooks().test {
+            val books = awaitItem()
+            assertThat(books).hasSize(1)
+            val first = books.first()
+            assertThat(first.id).isEqualTo("OL123W")
+            assertThat(first.title).isEqualTo("Test Book")
+            assertThat(first.category).isEqualTo(BookCategory.FANTASY)
+            assertThat(first.isFavorite).isTrue()
+            awaitComplete()
+        }
     }
 
     @Test

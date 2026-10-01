@@ -96,6 +96,24 @@ class BookRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun getFavoriteBooks(): Flow<List<Book>> {
+        return favoriteDao.getAllFavorites().map { list ->
+            list.map { entity ->
+                Book(
+                    id = entity.bookId,
+                    title = entity.title,
+                    author = entity.author,
+                    coverUrl = entity.coverUrl,
+                    price = entity.price,
+                    originalPrice = entity.originalPrice,
+                    category = BookCategory.fromSlug(entity.categorySlug),
+                    isTopItem = entity.isTopItem,
+                    isFavorite = true
+                )
+            }
+        }
+    }
+
     override fun getCartBookIds(): Flow<Set<String>> {
         return cartDao.getCartItems().map { list ->
             list.map { it.bookId }.toSet()

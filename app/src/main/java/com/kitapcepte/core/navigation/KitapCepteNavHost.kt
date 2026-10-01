@@ -29,6 +29,7 @@ import com.kitapcepte.core.designsystem.theme.KitapCepteTheme
 import com.kitapcepte.domain.model.Session
 import com.kitapcepte.feature.auth.AuthRoute
 import com.kitapcepte.feature.detail.DetailRoute
+import com.kitapcepte.feature.favorites.FavoritesRoute
 import com.kitapcepte.feature.home.HomeRoute
 import com.kitapcepte.feature.onboarding.OnboardingRoute
 
@@ -111,9 +112,17 @@ fun KitapCepteNavHost(
                 )
             }
             composable<Screen.Favorites> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Favoriler Ekranı (Faz 5)", style = MaterialTheme.typography.titleLarge)
-                }
+                FavoritesRoute(
+                    onNavigateToDetail = { bookId ->
+                        navController.navigate(Screen.Detail(bookId))
+                    },
+                    onNavigateToProfile = {
+                        navController.navigate(Screen.Profile)
+                    },
+                    onShowMemberRequiredSheet = {
+                        showMemberRequiredSheet = true
+                    }
+                )
             }
             composable<Screen.Cart> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

@@ -13,5 +13,8 @@ enum class BookCategory(val displayName: String, val slug: String) {
 
     companion object {
         val DEFAULT = FANTASY
+
+        fun fromSlug(slug: String): BookCategory =
+            entries.firstOrNull { it.slug == slug } ?: DEFAULT
     }
 }

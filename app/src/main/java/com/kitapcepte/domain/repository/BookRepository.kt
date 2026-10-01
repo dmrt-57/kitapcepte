@@ -9,6 +9,7 @@ interface BookRepository {
     suspend fun getBookDetail(bookId: String): Result<Book>
     suspend fun getSimilarBooks(currentBookId: String, category: BookCategory): List<Book>
     fun getFavoriteBookIds(): Flow<Set<String>>
+    fun getFavoriteBooks(): Flow<List<Book>>
     fun getCartBookIds(): Flow<Set<String>>
     fun getCartItemCount(): Flow<Int>
     suspend fun toggleFavorite(book: Book): Boolean
