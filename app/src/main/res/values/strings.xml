@@ -83,4 +83,21 @@
     <string name="auth_error_account_not_found">Hesabınız bulunamadı, lütfen kayıt olun.</string>
     <string name="auth_error_generic_login">Giriş başarısız oldu.</string>
     <string name="auth_error_generic_register">Kayıt başarısız oldu.</string>
+
+    <!-- Payment Screen -->
+    <string name="payment_title">Ödeme</string>
+    <string name="payment_card_holder_label">Kart Üzerindeki İsim</string>
+    <string name="payment_card_number_label">Kart Numarası</string>
+    <string name="payment_expiry_label">Son Kullanma (AA/YY)</string>
+    <string name="payment_cvv_label">CVV</string>
+    <string name="payment_save_card">Kartımı güvenle kaydet</string>
+    <string name="payment_error_card_holder">Lütfen kart üzerindeki ismi girin.</string>
+    <string name="payment_error_card_number">Geçerli bir 16 haneli kart numarası girin.</string>
+    <string name="payment_error_expiry">Geçerli bir son kullanma tarihi girin (AA/YY).</string>
+    <string name="payment_error_cvv">Geçerli bir 3 haneli CVV girin.</string>
+    <string name="payment_success_title">Siparişiniz Alındı!</string>
+    <string name="payment_success_message">Siparişiniz başarıyla oluşturuldu. Kitaplarınız en kısa sürede kargoya verilecektir.</string>
+    <string name="payment_order_number">Sipariş No: #KC%1$s</string>
+    <string name="btn_return_home">Ana Sayfaya Dön</string>
+    <string name="payment_total_amount">Ödenecek Tutar</string>
 </resources>

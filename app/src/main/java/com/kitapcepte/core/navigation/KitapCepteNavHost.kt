@@ -33,6 +33,7 @@ import com.kitapcepte.feature.detail.DetailRoute
 import com.kitapcepte.feature.favorites.FavoritesRoute
 import com.kitapcepte.feature.home.HomeRoute
 import com.kitapcepte.feature.onboarding.OnboardingRoute
+import com.kitapcepte.feature.payment.PaymentRoute
 
 @Composable
 fun KitapCepteNavHost(
@@ -139,9 +140,20 @@ fun KitapCepteNavHost(
                 )
             }
             composable<Screen.Payment> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Ödeme Ekranı (Faz 7)", style = MaterialTheme.typography.titleLarge)
-                }
+                PaymentRoute(
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    },
+                    onNavigateToHome = {
+                        navController.navigate(Screen.Home) {
+                            popUpTo(Screen.Home) { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    },
+                    onShowMemberRequiredSheet = {
+                        showMemberRequiredSheet = true
+                    }
+                )
             }
             composable<Screen.Profile> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
