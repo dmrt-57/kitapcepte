@@ -8,6 +8,7 @@ import com.kitapcepte.data.mapper.BookMapper
 import com.kitapcepte.data.remote.OpenLibraryApi
 import com.kitapcepte.domain.model.Book
 import com.kitapcepte.domain.model.BookCategory
+import com.kitapcepte.domain.model.CartItem
 import com.kitapcepte.domain.model.PriceProvider
 import com.kitapcepte.domain.repository.BookRepository
 import kotlinx.coroutines.flow.Flow
@@ -183,5 +184,37 @@ class BookRepositoryImpl @Inject constructor(
             cartDao.insertOrUpdate(newItem)
             true
         }
+    }
+
+    override fun getCartItems(): Flow<List<CartItem>> {
+        return cartDao.getCartItems().map { list ->
+            list.map { entity ->
+                CartItem(
+                    id = entity.id,
+                    bookId = entity.bookId,
+                    title = entity.title,
+                    author = entity.author,
+                    coverUrl = entity.coverUrl,
+                    price = entity.price,
+                    quantity = entity.quantity
+                )
+            }
+        }
+    }
+
+    override suspend fun updateCartQuantity(id: Long, quantity: Int) {
+        if (quantity <= 0) {
+            cartDao.deleteById(id)
+        } else {
+            cartDao.updateQuantity(id, quantity)
+        }
+    }
+
+    override suspend fun removeCartItem(id: Long) {
+        cartDao.deleteById(id)
+    }
+
+    override suspend fun clearCart() {
+        cartDao.clearCart()
     }
 }

@@ -28,6 +28,7 @@ import com.kitapcepte.core.designsystem.theme.BackgroundGradient
 import com.kitapcepte.core.designsystem.theme.KitapCepteTheme
 import com.kitapcepte.domain.model.Session
 import com.kitapcepte.feature.auth.AuthRoute
+import com.kitapcepte.feature.cart.CartRoute
 import com.kitapcepte.feature.detail.DetailRoute
 import com.kitapcepte.feature.favorites.FavoritesRoute
 import com.kitapcepte.feature.home.HomeRoute
@@ -125,9 +126,17 @@ fun KitapCepteNavHost(
                 )
             }
             composable<Screen.Cart> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Sepet Ekranı (Faz 6)", style = MaterialTheme.typography.titleLarge)
-                }
+                CartRoute(
+                    onNavigateToPayment = {
+                        navController.navigate(Screen.Payment)
+                    },
+                    onNavigateToProfile = {
+                        navController.navigate(Screen.Profile)
+                    },
+                    onShowMemberRequiredSheet = {
+                        showMemberRequiredSheet = true
+                    }
+                )
             }
             composable<Screen.Payment> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

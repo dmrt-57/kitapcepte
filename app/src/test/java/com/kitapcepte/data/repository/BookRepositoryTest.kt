@@ -221,4 +221,61 @@ class BookRepositoryTest {
 
         coVerify(exactly = 1) { cartDao.deleteByBookId("OL123W") }
     }
+
+    @Test
+    fun `getCartItems maps entities to domain CartItem objects`() = runTest {
+        val entity = CartItemEntity(
+            id = 10L,
+            bookId = "OL123W",
+            title = "Test Book",
+            author = "Author",
+            coverUrl = "https://cover.jpg",
+            price = 99.90,
+            quantity = 2
+        )
+        every { cartDao.getCartItems() } returns flowOf(listOf(entity))
+
+        repository.getCartItems().test {
+            val items = awaitItem()
+            assertThat(items).hasSize(1)
+            val first = items.first()
+            assertThat(first.id).isEqualTo(10L)
+            assertThat(first.bookId).isEqualTo("OL123W")
+            assertThat(first.title).isEqualTo("Test Book")
+            assertThat(first.price).isEqualTo(99.90)
+            assertThat(first.quantity).isEqualTo(2)
+            assertThat(first.totalPrice).isEqualTo(199.80)
+            awaitComplete()
+        }
+    }
+
+    @Test
+    fun `updateCartQuantity updates quantity when quantity greater than 0`() = runTest {
+        repository.updateCartQuantity(10L, 3)
+
+        coVerify(exactly = 1) { cartDao.updateQuantity(10L, 3) }
+        coVerify(exactly = 0) { cartDao.deleteById(any()) }
+    }
+
+    @Test
+    fun `updateCartQuantity deletes item when quantity is 0 or negative`() = runTest {
+        repository.updateCartQuantity(10L, 0)
+
+        coVerify(exactly = 1) { cartDao.deleteById(10L) }
+        coVerify(exactly = 0) { cartDao.updateQuantity(any(), any()) }
+    }
+
+    @Test
+    fun `removeCartItem deletes item by id`() = runTest {
+        repository.removeCartItem(10L)
+
+        coVerify(exactly = 1) { cartDao.deleteById(10L) }
+    }
+
+    @Test
+    fun `clearCart deletes all cart items`() = runTest {
+        repository.clearCart()
+
+        coVerify(exactly = 1) { cartDao.clearCart() }
+    }
 }
