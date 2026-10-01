@@ -175,8 +175,9 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `PriceClicked when logged in invokes addToCart and shows snackbar`() = runTest(testDispatcher) {
+    fun `PriceClicked when logged in toggles cart and shows snackbar`() = runTest(testDispatcher) {
         sessionFlow.value = Session.LoggedIn(User(1L, "user@test.com", "Serdar"))
+        coEvery { bookRepository.toggleCart(sampleBook) } returns true
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.uiEffect.test {
@@ -185,7 +186,23 @@ class HomeViewModelTest {
 
             val effect = awaitItem()
             assertThat(effect).isInstanceOf(HomeUiEffect.ShowSnackbar::class.java)
-            coVerify(exactly = 1) { bookRepository.addToCart(sampleBook) }
+            coVerify(exactly = 1) { bookRepository.toggleCart(sampleBook) }
+        }
+    }
+
+    @Test
+    fun `PriceClicked when logged in and removed from cart shows removed snackbar`() = runTest(testDispatcher) {
+        sessionFlow.value = Session.LoggedIn(User(1L, "user@test.com", "Serdar"))
+        coEvery { bookRepository.toggleCart(sampleBook) } returns false
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.uiEffect.test {
+            viewModel.onEvent(HomeUiEvent.PriceClicked(sampleBook))
+            testDispatcher.scheduler.advanceUntilIdle()
+
+            val effect = awaitItem()
+            assertThat(effect).isInstanceOf(HomeUiEffect.ShowSnackbar::class.java)
+            coVerify(exactly = 1) { bookRepository.toggleCart(sampleBook) }
         }
     }
 

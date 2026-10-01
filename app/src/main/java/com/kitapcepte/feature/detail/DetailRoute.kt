@@ -1,4 +1,4 @@
-package com.kitapcepte.feature.home
+package com.kitapcepte.feature.detail
 
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -11,12 +11,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
-fun HomeRoute(
+fun DetailRoute(
+    onNavigateBack: () -> Unit,
     onNavigateToDetail: (String) -> Unit,
-    onNavigateToProfile: () -> Unit,
     onShowMemberRequiredSheet: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = hiltViewModel()
+    viewModel: DetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -25,17 +25,17 @@ fun HomeRoute(
     LaunchedEffect(viewModel) {
         viewModel.uiEffect.collect { effect ->
             when (effect) {
-                is HomeUiEffect.NavigateToDetail -> onNavigateToDetail(effect.bookId)
-                HomeUiEffect.NavigateToProfile -> onNavigateToProfile()
-                HomeUiEffect.ShowMemberRequiredSheet -> onShowMemberRequiredSheet()
-                is HomeUiEffect.ShowSnackbar -> {
+                DetailUiEffect.NavigateBack -> onNavigateBack()
+                is DetailUiEffect.NavigateToDetail -> onNavigateToDetail(effect.bookId)
+                DetailUiEffect.ShowMemberRequiredSheet -> onShowMemberRequiredSheet()
+                is DetailUiEffect.ShowSnackbar -> {
                     snackbarHostState.showSnackbar(effect.message.asString(context))
                 }
             }
         }
     }
 
-    HomeScreen(
+    DetailScreen(
         state = state,
         onEvent = viewModel::onEvent,
         snackbarHostState = snackbarHostState,

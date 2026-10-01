@@ -57,6 +57,11 @@
     <string name="error_generic">Bir sorun oluştu. Lütfen tekrar deneyin.</string>
     <string name="network_error">İnternet bağlantınızı kontrol edin.</string>
     <string name="book_added_to_cart">%1$s sepete eklendi.</string>
+    <string name="book_removed_from_cart">%1$s sepetten çıkarıldı.</string>
+    <string name="btn_remove_from_cart">Sepetten Çıkar</string>
+    <string name="detail_title">Kitap Detayı</string>
+    <string name="similar_books_title">Benzer Kitaplar</string>
+    <string name="book_description_title">Açıklama</string>
 
     <!-- Auth Screen -->
     <string name="auth_welcome_back">Tekrar hoş geldiniz</string>

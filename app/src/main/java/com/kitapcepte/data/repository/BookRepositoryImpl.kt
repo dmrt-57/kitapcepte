@@ -8,6 +8,7 @@ import com.kitapcepte.data.mapper.BookMapper
 import com.kitapcepte.data.remote.OpenLibraryApi
 import com.kitapcepte.domain.model.Book
 import com.kitapcepte.domain.model.BookCategory
+import com.kitapcepte.domain.model.PriceProvider
 import com.kitapcepte.domain.repository.BookRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -20,7 +21,8 @@ class BookRepositoryImpl @Inject constructor(
     private val api: OpenLibraryApi,
     private val favoriteDao: FavoriteDao,
     private val cartDao: CartDao,
-    private val bookMapper: BookMapper
+    private val bookMapper: BookMapper,
+    private val priceProvider: PriceProvider
 ) : BookRepository {
 
     private val cache = ConcurrentHashMap<BookCategory, List<Book>>()
@@ -38,6 +40,54 @@ class BookRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    override suspend fun getBookDetail(bookId: String): Result<Book> {
+        val cachedBook = cache.values.flatten().find { it.id == bookId }
+        val isFavorite = favoriteDao.isFavoriteDirect(bookId)
+
+        return try {
+            val workDto = try {
+                api.getWork(bookId)
+            } catch (e: Exception) {
+                null
+            }
+
+            val detailedBook = if (cachedBook != null) {
+                cachedBook.copy(
+                    description = workDto?.descriptionText ?: cachedBook.description,
+                    coverUrl = cachedBook.coverUrl?.replace("-M.jpg", "-L.jpg") ?: cachedBook.coverUrl,
+                    isFavorite = isFavorite
+                )
+            } else {
+                val price = priceProvider.getPrice(bookId)
+                val originalPrice = priceProvider.getOriginalPrice(bookId)
+                Book(
+                    id = bookId,
+                    title = workDto?.title ?: "Kitap",
+                    author = "Yazar Bilinmiyor",
+                    coverUrl = null,
+                    price = price,
+                    originalPrice = originalPrice,
+                    isFavorite = isFavorite,
+                    description = workDto?.descriptionText
+                )
+            }
+            Result.success(detailedBook)
+        } catch (e: Exception) {
+            if (cachedBook != null) {
+                Result.success(cachedBook.copy(isFavorite = isFavorite))
+            } else {
+                Result.failure(e)
+            }
+        }
+    }
+
+    override suspend fun getSimilarBooks(currentBookId: String, category: BookCategory): List<Book> {
+        val categoryBooks = getBooksByCategory(category).getOrDefault(emptyList())
+        return categoryBooks
+            .filter { it.id != currentBookId }
+            .take(6)
     }
 
     override fun getFavoriteBookIds(): Flow<Set<String>> {
@@ -91,6 +141,29 @@ class BookRepositoryImpl @Inject constructor(
                 quantity = 1
             )
             cartDao.insertOrUpdate(newItem)
+        }
+    }
+
+    override suspend fun removeFromCart(bookId: String) {
+        cartDao.deleteByBookId(bookId)
+    }
+
+    override suspend fun toggleCart(book: Book): Boolean {
+        val existingItem = cartDao.getCartItemByBookId(book.id)
+        return if (existingItem != null) {
+            cartDao.deleteByBookId(book.id)
+            false
+        } else {
+            val newItem = CartItemEntity(
+                bookId = book.id,
+                title = book.title,
+                author = book.author,
+                coverUrl = book.coverUrl,
+                price = book.price,
+                quantity = 1
+            )
+            cartDao.insertOrUpdate(newItem)
+            true
         }
     }
 }

@@ -28,6 +28,7 @@ import com.kitapcepte.core.designsystem.theme.BackgroundGradient
 import com.kitapcepte.core.designsystem.theme.KitapCepteTheme
 import com.kitapcepte.domain.model.Session
 import com.kitapcepte.feature.auth.AuthRoute
+import com.kitapcepte.feature.detail.DetailRoute
 import com.kitapcepte.feature.home.HomeRoute
 import com.kitapcepte.feature.onboarding.OnboardingRoute
 
@@ -96,11 +97,18 @@ fun KitapCepteNavHost(
                     }
                 )
             }
-            composable<Screen.Detail> { backStackEntry ->
-                val detail = backStackEntry.toRoute<Screen.Detail>()
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Kitap Detay: ${detail.bookId} (Faz 4)", style = MaterialTheme.typography.titleLarge)
-                }
+            composable<Screen.Detail> {
+                DetailRoute(
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    },
+                    onNavigateToDetail = { bookId ->
+                        navController.navigate(Screen.Detail(bookId))
+                    },
+                    onShowMemberRequiredSheet = {
+                        showMemberRequiredSheet = true
+                    }
+                )
             }
             composable<Screen.Favorites> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

@@ -8,8 +8,10 @@ import com.kitapcepte.data.mapper.BookMapper
 import com.kitapcepte.data.remote.OpenLibraryApi
 import com.kitapcepte.data.remote.dto.BookDocDto
 import com.kitapcepte.data.remote.dto.SearchResponseDto
+import com.kitapcepte.data.remote.dto.WorkDto
 import com.kitapcepte.domain.model.Book
 import com.kitapcepte.domain.model.BookCategory
+import com.kitapcepte.domain.model.PriceProvider
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -17,6 +19,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.JsonPrimitive
 import org.junit.Before
 import org.junit.Test
 import java.io.IOException
@@ -27,6 +30,7 @@ class BookRepositoryTest {
     private val favoriteDao: FavoriteDao = mockk(relaxed = true)
     private val cartDao: CartDao = mockk(relaxed = true)
     private val bookMapper: BookMapper = mockk()
+    private val priceProvider: PriceProvider = mockk()
 
     private lateinit var repository: BookRepositoryImpl
 
@@ -34,7 +38,7 @@ class BookRepositoryTest {
         id = "OL123W",
         title = "Test Book",
         author = "Test Author",
-        coverUrl = null,
+        coverUrl = "https://covers.openlibrary.org/b/id/123-M.jpg",
         price = 99.90,
         category = BookCategory.FANTASY
     )
@@ -43,14 +47,18 @@ class BookRepositoryTest {
     fun setUp() {
         coEvery { favoriteDao.insertFavorite(any()) } just runs
         coEvery { favoriteDao.deleteFavorite(any()) } just runs
+        coEvery { favoriteDao.isFavoriteDirect(any()) } returns false
         coEvery { cartDao.insertOrUpdate(any()) } returns 1L
         coEvery { cartDao.updateQuantity(any(), any()) } just runs
+        every { priceProvider.getPrice(any()) } returns 99.90
+        every { priceProvider.getOriginalPrice(any()) } returns 149.90
 
         repository = BookRepositoryImpl(
             api = api,
             favoriteDao = favoriteDao,
             cartDao = cartDao,
-            bookMapper = bookMapper
+            bookMapper = bookMapper,
+            priceProvider = priceProvider
         )
     }
 
@@ -61,12 +69,10 @@ class BookRepositoryTest {
         coEvery { api.searchBooks("subject:fantasy", 30) } returns response
         every { bookMapper.mapListToDomain(listOf(dto), BookCategory.FANTASY) } returns listOf(testBook)
 
-        // First call - invokes API
         val result1 = repository.getBooksByCategory(BookCategory.FANTASY)
         assertThat(result1.isSuccess).isTrue()
         assertThat(result1.getOrNull()).containsExactly(testBook)
 
-        // Second call - returns cached, does not call API again
         val result2 = repository.getBooksByCategory(BookCategory.FANTASY)
         assertThat(result2.isSuccess).isTrue()
         assertThat(result2.getOrNull()).containsExactly(testBook)
@@ -81,6 +87,39 @@ class BookRepositoryTest {
         val result = repository.getBooksByCategory(BookCategory.HISTORY)
         assertThat(result.isFailure).isTrue()
         assertThat(result.exceptionOrNull()?.message).contains("Network timeout")
+    }
+
+    @Test
+    fun `getBookDetail enhances cached book with works description and large cover`() = runTest {
+        // Preload cache
+        val dto = BookDocDto(key = "/works/OL123W", title = "Test Book")
+        coEvery { api.searchBooks("subject:fantasy", 30) } returns SearchResponseDto(1, 0, listOf(dto))
+        every { bookMapper.mapListToDomain(any(), any()) } returns listOf(testBook)
+        repository.getBooksByCategory(BookCategory.FANTASY)
+
+        coEvery { api.getWork("OL123W") } returns WorkDto(
+            title = "Test Book",
+            description = JsonPrimitive("Awesome book summary")
+        )
+
+        val detailResult = repository.getBookDetail("OL123W")
+        assertThat(detailResult.isSuccess).isTrue()
+        val detailedBook = detailResult.getOrNull()
+        assertThat(detailedBook?.description).isEqualTo("Awesome book summary")
+        assertThat(detailedBook?.coverUrl).isEqualTo("https://covers.openlibrary.org/b/id/123-L.jpg")
+    }
+
+    @Test
+    fun `getSimilarBooks returns other books in category excluding current book`() = runTest {
+        val book2 = testBook.copy(id = "OL2W", title = "Book 2")
+        val book3 = testBook.copy(id = "OL3W", title = "Book 3")
+        val dto = BookDocDto(key = "/works/OL123W", title = "Test Book")
+        coEvery { api.searchBooks("subject:fantasy", 30) } returns SearchResponseDto(3, 0, listOf(dto))
+        every { bookMapper.mapListToDomain(any(), any()) } returns listOf(testBook, book2, book3)
+
+        val similar = repository.getSimilarBooks("OL123W", BookCategory.FANTASY)
+        assertThat(similar).hasSize(2)
+        assertThat(similar.map { it.id }).containsExactly("OL2W", "OL3W")
     }
 
     @Test
@@ -122,5 +161,35 @@ class BookRepositoryTest {
         repository.addToCart(testBook)
 
         coVerify(exactly = 1) { cartDao.updateQuantity(5L, 3) }
+    }
+
+    @Test
+    fun `toggleCart inserts new item and returns true when not in cart`() = runTest {
+        coEvery { cartDao.getCartItemByBookId("OL123W") } returns null
+
+        val added = repository.toggleCart(testBook)
+
+        assertThat(added).isTrue()
+        coVerify(exactly = 1) { cartDao.insertOrUpdate(match { it.bookId == "OL123W" && it.quantity == 1 }) }
+        coVerify(exactly = 0) { cartDao.deleteByBookId(any()) }
+    }
+
+    @Test
+    fun `toggleCart deletes item and returns false when already in cart`() = runTest {
+        val existing = CartItemEntity(id = 5L, bookId = "OL123W", title = "Test", author = "Author", coverUrl = null, price = 99.90, quantity = 1)
+        coEvery { cartDao.getCartItemByBookId("OL123W") } returns existing
+
+        val added = repository.toggleCart(testBook)
+
+        assertThat(added).isFalse()
+        coVerify(exactly = 1) { cartDao.deleteByBookId("OL123W") }
+        coVerify(exactly = 0) { cartDao.insertOrUpdate(any()) }
+    }
+
+    @Test
+    fun `removeFromCart deletes item by bookId`() = runTest {
+        repository.removeFromCart("OL123W")
+
+        coVerify(exactly = 1) { cartDao.deleteByBookId("OL123W") }
     }
 }

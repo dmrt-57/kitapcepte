@@ -123,8 +123,13 @@ class HomeViewModel @Inject constructor(
                     },
                     onAllowed = {
                         viewModelScope.launch(dispatchers.io) {
-                            bookRepository.addToCart(event.book)
-                            _uiEffect.send(HomeUiEffect.ShowSnackbar(UiText.StringResource(R.string.book_added_to_cart, event.book.title)))
+                            val added = bookRepository.toggleCart(event.book)
+                            val message = if (added) {
+                                UiText.StringResource(R.string.book_added_to_cart, event.book.title)
+                            } else {
+                                UiText.StringResource(R.string.book_removed_from_cart, event.book.title)
+                            }
+                            _uiEffect.send(HomeUiEffect.ShowSnackbar(message))
                         }
                     }
                 )
