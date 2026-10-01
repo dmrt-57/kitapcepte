@@ -1,8 +1,12 @@
 package com.kitapcepte.core.di
 
+import com.kitapcepte.data.mapper.DeterministicPriceProvider
 import com.kitapcepte.data.repository.AuthRepositoryImpl
+import com.kitapcepte.data.repository.BookRepositoryImpl
 import com.kitapcepte.data.repository.SessionRepositoryImpl
+import com.kitapcepte.domain.model.PriceProvider
 import com.kitapcepte.domain.repository.AuthRepository
+import com.kitapcepte.domain.repository.BookRepository
 import com.kitapcepte.domain.repository.SessionRepository
 import dagger.Binds
 import dagger.Module
@@ -21,4 +25,12 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindSessionRepository(impl: SessionRepositoryImpl): SessionRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindBookRepository(impl: BookRepositoryImpl): BookRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindPriceProvider(impl: DeterministicPriceProvider): PriceProvider
 }

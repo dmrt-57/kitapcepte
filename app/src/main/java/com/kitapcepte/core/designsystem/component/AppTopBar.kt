@@ -38,14 +38,15 @@ fun AppTopBar(
     modifier: Modifier = Modifier,
     navigationIcon: (@Composable () -> Unit)? = null,
     actions: (@Composable RowScope.() -> Unit)? = null,
-    backgroundColor: Color = Color.Transparent
+    backgroundColor: Color = Color.Transparent,
+    titleColor: Color = Color.White
 ) {
     Box(
         modifier = modifier
             .fillMaxWidth()
             .background(backgroundColor)
             .statusBarsPadding()
-            .height(56.dp)
+            .height(52.dp)
             .padding(horizontal = 16.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -63,7 +64,7 @@ fun AppTopBar(
             text = title,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = titleColor,
             textAlign = TextAlign.Center
         )
 

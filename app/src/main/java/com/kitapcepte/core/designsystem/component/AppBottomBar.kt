@@ -63,16 +63,16 @@ fun AppBottomBar(
         modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(horizontal = 24.dp, vertical = 12.dp),
+            .padding(horizontal = 20.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(64.dp)
-                .shadow(elevation = 10.dp, shape = CircleShape)
+                .height(60.dp)
+                .shadow(elevation = 12.dp, shape = CircleShape)
                 .clip(CircleShape)
-                .background(KitapCepteTheme.extendedColors.surfaceWhite)
+                .background(KitapCepteTheme.extendedColors.surfaceWhite.copy(alpha = 0.94f))
                 .padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceAround

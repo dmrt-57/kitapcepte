@@ -6,6 +6,7 @@ import com.kitapcepte.core.navigation.Screen
 import com.kitapcepte.data.local.datastore.UserPreferencesDataStore
 import com.kitapcepte.domain.model.Session
 import com.kitapcepte.domain.model.User
+import com.kitapcepte.domain.repository.BookRepository
 import com.kitapcepte.domain.repository.SessionRepository
 import io.mockk.every
 import io.mockk.mockk
@@ -26,13 +27,18 @@ class MainViewModelTest {
     private val testDispatcher = StandardTestDispatcher()
     private val preferencesDataStore: UserPreferencesDataStore = mockk()
     private val sessionRepository: SessionRepository = mockk()
+    private val bookRepository: BookRepository = mockk()
 
     private val isOnboardingCompletedFlow = MutableStateFlow(false)
     private val sessionStateFlow = MutableStateFlow<Session>(Session.LoggedOut)
+    private val cartItemCountFlow = MutableStateFlow(0)
 
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
+        every { preferencesDataStore.isOnboardingCompleted } returns isOnboardingCompletedFlow
+        every { sessionRepository.sessionState } returns sessionStateFlow
+        every { bookRepository.getCartItemCount() } returns cartItemCountFlow
     }
 
     @After
@@ -42,10 +48,7 @@ class MainViewModelTest {
 
     @Test
     fun `when onboarding is not completed startDestination is Onboarding`() = runTest(testDispatcher) {
-        every { preferencesDataStore.isOnboardingCompleted } returns isOnboardingCompletedFlow
-        every { sessionRepository.sessionState } returns sessionStateFlow
-
-        val viewModel = MainViewModel(preferencesDataStore, sessionRepository)
+        val viewModel = MainViewModel(preferencesDataStore, sessionRepository, bookRepository)
 
         viewModel.uiState.test {
             assertThat(awaitItem().isLoading).isTrue()
@@ -61,10 +64,7 @@ class MainViewModelTest {
         isOnboardingCompletedFlow.value = true
         sessionStateFlow.value = Session.LoggedOut
 
-        every { preferencesDataStore.isOnboardingCompleted } returns isOnboardingCompletedFlow
-        every { sessionRepository.sessionState } returns sessionStateFlow
-
-        val viewModel = MainViewModel(preferencesDataStore, sessionRepository)
+        val viewModel = MainViewModel(preferencesDataStore, sessionRepository, bookRepository)
 
         viewModel.uiState.test {
             assertThat(awaitItem().isLoading).isTrue()
@@ -81,10 +81,7 @@ class MainViewModelTest {
         isOnboardingCompletedFlow.value = true
         sessionStateFlow.value = Session.Guest
 
-        every { preferencesDataStore.isOnboardingCompleted } returns isOnboardingCompletedFlow
-        every { sessionRepository.sessionState } returns sessionStateFlow
-
-        val viewModel = MainViewModel(preferencesDataStore, sessionRepository)
+        val viewModel = MainViewModel(preferencesDataStore, sessionRepository, bookRepository)
 
         viewModel.uiState.test {
             assertThat(awaitItem().isLoading).isTrue()
@@ -102,10 +99,7 @@ class MainViewModelTest {
         val user = User(1L, "user@test.com", "Serdar")
         sessionStateFlow.value = Session.LoggedIn(user)
 
-        every { preferencesDataStore.isOnboardingCompleted } returns isOnboardingCompletedFlow
-        every { sessionRepository.sessionState } returns sessionStateFlow
-
-        val viewModel = MainViewModel(preferencesDataStore, sessionRepository)
+        val viewModel = MainViewModel(preferencesDataStore, sessionRepository, bookRepository)
 
         viewModel.uiState.test {
             assertThat(awaitItem().isLoading).isTrue()
@@ -114,6 +108,21 @@ class MainViewModelTest {
             assertThat(state.isLoading).isFalse()
             assertThat(state.startDestination).isEqualTo(Screen.Home)
             assertThat(state.session).isEqualTo(Session.LoggedIn(user))
+        }
+    }
+
+    @Test
+    fun `cartItemCount updates live from BookRepository`() = runTest(testDispatcher) {
+        val viewModel = MainViewModel(preferencesDataStore, sessionRepository, bookRepository)
+
+        viewModel.uiState.test {
+            assertThat(awaitItem().isLoading).isTrue()
+            testDispatcher.scheduler.advanceUntilIdle()
+            assertThat(awaitItem().cartItemCount).isEqualTo(0)
+
+            cartItemCountFlow.value = 5
+            testDispatcher.scheduler.advanceUntilIdle()
+            assertThat(awaitItem().cartItemCount).isEqualTo(5)
         }
     }
 }

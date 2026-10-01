@@ -25,7 +25,8 @@ class MainActivity : ComponentActivity() {
                 if (!uiState.isLoading) {
                     KitapCepteNavHost(
                         startDestination = uiState.startDestination,
-                        session = uiState.session
+                        session = uiState.session,
+                        cartItemCount = uiState.cartItemCount
                     )
                 }
             }

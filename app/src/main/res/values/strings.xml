@@ -56,6 +56,7 @@
     <string name="empty_cart">Sepetinizde henüz ürün bulunmuyor.</string>
     <string name="error_generic">Bir sorun oluştu. Lütfen tekrar deneyin.</string>
     <string name="network_error">İnternet bağlantınızı kontrol edin.</string>
+    <string name="book_added_to_cart">%1$s sepete eklendi.</string>
 
     <!-- Auth Screen -->
     <string name="auth_welcome_back">Tekrar hoş geldiniz</string>

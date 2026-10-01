@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.kitapcepte.core.navigation.Screen
 import com.kitapcepte.data.local.datastore.UserPreferencesDataStore
 import com.kitapcepte.domain.model.Session
+import com.kitapcepte.domain.repository.BookRepository
 import com.kitapcepte.domain.repository.SessionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,19 +17,22 @@ import javax.inject.Inject
 data class MainUiState(
     val isLoading: Boolean = true,
     val startDestination: Screen = Screen.Onboarding,
-    val session: Session = Session.LoggedOut
+    val session: Session = Session.LoggedOut,
+    val cartItemCount: Int = 0
 )
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     preferencesDataStore: UserPreferencesDataStore,
-    sessionRepository: SessionRepository
+    sessionRepository: SessionRepository,
+    bookRepository: BookRepository
 ) : ViewModel() {
 
     val uiState: StateFlow<MainUiState> = combine(
         preferencesDataStore.isOnboardingCompleted,
-        sessionRepository.sessionState
-    ) { isOnboardingCompleted, session ->
+        sessionRepository.sessionState,
+        bookRepository.getCartItemCount()
+    ) { isOnboardingCompleted, session, cartItemCount ->
         val startDestination = when {
             !isOnboardingCompleted -> Screen.Onboarding
             session is Session.LoggedOut -> Screen.Auth
@@ -37,7 +41,8 @@ class MainViewModel @Inject constructor(
         MainUiState(
             isLoading = false,
             startDestination = startDestination,
-            session = session
+            session = session,
+            cartItemCount = cartItemCount
         )
     }.stateIn(
         scope = viewModelScope,
