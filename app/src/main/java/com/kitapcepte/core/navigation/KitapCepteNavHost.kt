@@ -1,0 +1,188 @@
+package com.kitapcepte.core.navigation
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
+import com.kitapcepte.core.designsystem.component.AppBottomBar
+import com.kitapcepte.core.designsystem.component.BottomBarDestination
+import com.kitapcepte.core.designsystem.component.MemberRequiredBottomSheet
+import com.kitapcepte.core.designsystem.theme.BackgroundGradient
+import com.kitapcepte.core.designsystem.theme.KitapCepteTheme
+import com.kitapcepte.domain.model.Session
+
+@Composable
+fun KitapCepteNavHost(
+    modifier: Modifier = Modifier,
+    navController: NavHostController = rememberNavController(),
+    startDestination: Screen = Screen.Home,
+    session: Session = Session.LoggedIn(com.kitapcepte.domain.model.User(1, "demo@kitapcepte.com", "Serdar")),
+    cartItemCount: Int = 0
+) {
+    var showMemberRequiredSheet by remember { mutableStateOf(false) }
+
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    val showBottomBar = currentRoute?.let { route ->
+        route.contains("Home") || route.contains("Favorites") || route.contains("Cart") || route.contains("Profile")
+    } ?: true
+
+    val currentBottomDestination = when {
+        currentRoute?.contains("Favorites") == true -> BottomBarDestination.FAVORITES
+        currentRoute?.contains("Cart") == true -> BottomBarDestination.CART
+        currentRoute?.contains("Profile") == true -> BottomBarDestination.PROFILE
+        else -> BottomBarDestination.HOME
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(BackgroundGradient)
+    ) {
+        Scaffold(
+            containerColor = androidx.compose.ui.graphics.Color.Transparent,
+            bottomBar = {
+                if (showBottomBar) {
+                    AppBottomBar(
+                        currentDestination = currentBottomDestination,
+                        cartItemCount = cartItemCount,
+                        onNavigateToDestination = { destination ->
+                            when (destination) {
+                                BottomBarDestination.HOME -> {
+                                    navController.navigate(Screen.Home) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                }
+                                BottomBarDestination.FAVORITES -> {
+                                    GuestGuard.check(
+                                        session = session,
+                                        onGuestRestricted = { showMemberRequiredSheet = true },
+                                        onAllowed = {
+                                            navController.navigate(Screen.Favorites) {
+                                                popUpTo(navController.graph.findStartDestination().id) {
+                                                    saveState = true
+                                                }
+                                                launchSingleTop = true
+                                                restoreState = true
+                                            }
+                                        }
+                                    )
+                                }
+                                BottomBarDestination.CART -> {
+                                    GuestGuard.check(
+                                        session = session,
+                                        onGuestRestricted = { showMemberRequiredSheet = true },
+                                        onAllowed = {
+                                            navController.navigate(Screen.Cart) {
+                                                popUpTo(navController.graph.findStartDestination().id) {
+                                                    saveState = true
+                                                }
+                                                launchSingleTop = true
+                                                restoreState = true
+                                            }
+                                        }
+                                    )
+                                }
+                                BottomBarDestination.PROFILE -> {
+                                    GuestGuard.check(
+                                        session = session,
+                                        onGuestRestricted = { showMemberRequiredSheet = true },
+                                        onAllowed = {
+                                            navController.navigate(Screen.Profile) {
+                                                popUpTo(navController.graph.findStartDestination().id) {
+                                                    saveState = true
+                                                }
+                                                launchSingleTop = true
+                                                restoreState = true
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    )
+                }
+            }
+        ) { innerPadding ->
+            NavHost(
+                navController = navController,
+                startDestination = startDestination,
+                modifier = Modifier.padding(innerPadding)
+            ) {
+                composable<Screen.Onboarding> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Onboarding Ekranı (Faz 1)", style = MaterialTheme.typography.titleLarge)
+                    }
+                }
+                composable<Screen.Auth> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Giriş / Kayıt Ekranı (Faz 2)", style = MaterialTheme.typography.titleLarge)
+                    }
+                }
+                composable<Screen.Home> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Kitap Cepte - Home (Faz 3)", style = MaterialTheme.typography.titleLarge)
+                    }
+                }
+                composable<Screen.Detail> { backStackEntry ->
+                    val detail = backStackEntry.toRoute<Screen.Detail>()
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Kitap Detay: ${detail.bookId} (Faz 4)", style = MaterialTheme.typography.titleLarge)
+                    }
+                }
+                composable<Screen.Favorites> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Favoriler Ekranı (Faz 5)", style = MaterialTheme.typography.titleLarge)
+                    }
+                }
+                composable<Screen.Cart> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Sepet Ekranı (Faz 6)", style = MaterialTheme.typography.titleLarge)
+                    }
+                }
+                composable<Screen.Payment> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Ödeme Ekranı (Faz 7)", style = MaterialTheme.typography.titleLarge)
+                    }
+                }
+                composable<Screen.Profile> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Profil Ekranı (Faz 8)", style = MaterialTheme.typography.titleLarge)
+                    }
+                }
+            }
+        }
+
+        if (showMemberRequiredSheet) {
+            MemberRequiredBottomSheet(
+                onDismissRequest = { showMemberRequiredSheet = false },
+                onNavigateToAuth = {
+                    showMemberRequiredSheet = false
+                    navController.navigate(Screen.Auth)
+                }
+            )
+        }
+    }
+}

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Kitap Cepte</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Ana Sayfa</string>
+    <string name="nav_favorites">Favoriler</string>
+    <string name="nav_cart">Sepet</string>
+    <string name="nav_profile">Profil</string>
+
+    <!-- Content Descriptions -->
+    <string name="profile_icon_desc">Profil</string>
+    <string name="back_button_desc">Geri</string>
+    <string name="favorite_add_desc">Favorilere Ekle</string>
+    <string name="favorite_remove_desc">Favorilerden Çıkar</string>
+    <string name="cart_icon_desc">Sepet</string>
+    <string name="book_cover_desc">%1$s kapak görseli</string>
+
+    <!-- Common Buttons -->
+    <string name="btn_add_to_cart">Sepete Ekle</string>
+    <string name="btn_in_cart">Sepette</string>
+    <string name="btn_checkout">Ödemeye Geç</string>
+    <string name="btn_pay">Ödeme Yap</string>
+    <string name="btn_guest_continue">Misafir olarak devam et</string>
+    <string name="btn_email_login">E-posta ile giriş yap</string>
+    <string name="btn_register">Kayıt Ol</string>
+    <string name="btn_login">Giriş Yap</string>
+    <string name="btn_skip">Atla</string>
+    <string name="btn_next">İleri</string>
+    <string name="btn_get_started">Başla</string>
+    <string name="btn_delete">Sil</string>
+    <string name="btn_cancel">İptal</string>
+    <string name="btn_confirm">Onayla</string>
+    <string name="btn_retry">Tekrar Dene</string>
+
+    <!-- Order Summary -->
+    <string name="subtotal">Ara Toplam</string>
+    <string name="tax">Vergi (%10)</string>
+    <string name="shipping">Kargo Ücreti</string>
+    <string name="free_shipping">Ücretsiz</string>
+    <string name="total">Toplam</string>
+    <string name="currency_tl">₺</string>
+
+    <!-- Badges -->
+    <string name="badge_top_item">Top Item</string>
+
+    <!-- Member Required BottomSheet -->
+    <string name="member_required_title">Üye Olmanız Gerekiyor</string>
+    <string name="member_required_message">Bu özelliği kullanabilmek için lütfen giriş yapın veya kayıt olun.</string>
+    <string name="btn_login_or_register">Giriş Yap / Kayıt Ol</string>
+
+    <!-- States -->
+    <string name="loading">Yükleniyor...</string>
+    <string name="empty_books">Aradığınız kriterde kitap bulunamadı.</string>
+    <string name="empty_favorites">Henüz favori kitap eklemediniz.</string>
+    <string name="empty_cart">Sepetinizde henüz ürün bulunmuyor.</string>
+    <string name="error_generic">Bir sorun oluştu. Lütfen tekrar deneyin.</string>
+    <string name="network_error">İnternet bağlantınızı kontrol edin.</string>
+</resources>
